@@ -1,0 +1,22 @@
+body {
+    background: #f7f8fa;
+}
+
+/* TAB LABEL STYLE */
+.tab-header {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* FORM CARD BOX STYLE */
+.form-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Labels bold */
+.form-label {
+    font-weight: 600;
+}

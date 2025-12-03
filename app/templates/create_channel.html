@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconciliation Configuration</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/css/channel.css') }}">
+</head>
+
+<body>
+
+    {% include 'sidebar.html' %}
+
+    <div class="p-4">
+
+        <h2 class="fw-bold">Reconciliation Tool</h2>
+        <p class="text-muted mb-4">Configuration Layer Management</p>
+
+        <!-- TAB MENU -->
+        <ul class="nav nav-tabs mb-4" id="configTabs">
+            <li class="nav-item">
+                <button class="nav-link active" data-target="tab-channel">Channel Configuration</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-target="tab-structure">Data Structure</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-target="tab-mapping">Mapping Configuration</button>
+            </li>
+        </ul>
+
+        <!-- ======================= CHANNEL CONFIG TAB ====================== -->
+        <div id="tab-channel" class="tab-section">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Channel Configuration</h4>
+                <button class="btn btn-primary"><i class="bi bi-plus-circle"></i> New Channel</button>
+            </div>
+
+            <div class="form-card mb-4">
+                <h5 class="fw-bold mb-3">Channel List</h5>
+
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Channel Name</th>
+                            <th>Type</th>
+                            <th>Source Path</th>
+                            <th>Polling Frequency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ch in channels %}
+                        <tr>
+                            <td>{{ ch.id }}</td>
+                            <td>{{ ch.channel_name }}</td>
+                            <td>{{ ch.channel_type }}</td>
+                            <td>{{ ch.channel_source_path }}</td>
+                            <td>{{ ch.channel_polling_freq }} <strong>Second</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ADD CHANNEL FORM -->
+            <div class="form-card">
+                <h5 class="fw-bold mb-4">Add New Channel</h5>
+
+                <form method="POST">
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Channel Name</label>
+                            <input type="text" name="channel_name" class="form-control"
+                                placeholder="e.g. Payment Gateway SFTP" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Channel Type</label>
+                            <select name="channel_type" class="form-select" required>
+                                <option>Select...</option>
+                                <option>SFTP</option>
+                                <option>API</option>
+                                <option>Manual Upload</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Source Path / URL</label>
+                            <input type="text" name="channel_source_path" class="form-control"
+                                placeholder="/sftp/incoming/payments/">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">File Pattern</label>
+                            <input type="text" name="channel_file_type" class="form-control"
+                                placeholder="filename.csv">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="channel_username" class="form-control" placeholder="sftp_username">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Polling Frequency</label>
+                            <select name="channel_polling_freq" class="form-select">
+                                <option value="300">Every 5 minutes</option>
+                                <option value="900">Every 15 minutes</option>
+                                <option value="1800">Every 30 minutes</option>
+                                <option value="3600">Hourly</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button type="reset" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Channel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ======================= DATA STRUCTURE TAB ====================== -->
+        <div id="tab-structure" class="tab-section d-none">
+
+            <h4 class="fw-bold mb-2">Data Structure Configuration</h4>
+            <p class="text-muted mb-4">Define schema and data types for reconciliation</p>
+
+            <button class="btn btn-success mb-3" id="addFieldBtn">
+                <i class="bi bi-plus-circle"></i> Add Field
+            </button>
+
+            <!-- ADD FIELD FORM -->
+            <div class="card p-3 mb-4 d-none" id="addFieldForm">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-3">Add Data Field</h5>
+                    <i class="bi bi-x-lg fs-5 text-muted" id="closeFieldForm" style="cursor:pointer"></i>
+                </div>
+
+                <form method="POST">
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Field Name</label>
+                            <input type="text" class="form-control" placeholder="e.g., transaction_id" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Data Type</label>
+                            <select class="form-select" required>
+                                <option value="">Select...</option>
+                                <option>String</option>
+                                <option>Integer</option>
+                                <option>Decimal</option>
+                                <option>Date</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Format</label>
+                            <input type="text" class="form-control" placeholder="e.g. YYYY-MM-DD (optional)">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Min Length</label>
+                            <input type="number" class="form-control" value="0">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Max Length</label>
+                            <input type="number" class="form-control" value="255">
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox">
+                                <label class="form-check-label fw-semibold">Mandatory</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox">
+                                <label class="form-check-label fw-semibold">Primary Key</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Validation Regex (Optional)</label>
+                            <input type="text" class="form-control" placeholder="e.g., ^[A-Z0-9]+$">
+                        </div>
+
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button type="button" class="btn btn-secondary" id="cancelFieldBtn">Cancel</button>
+                        <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Add Field</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- SCHEMA TABLE -->
+            <div class="mt-4">
+                <h5 class="fw-bold mb-3">Schema Fields</h5>
+
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Field Name</th>
+                            <th>Data Type</th>
+                            <th>Mandatory</th>
+                            <th>Primary Key</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="schemaTableBody">
+                        <tr>
+                            <td>transaction_id</td>
+                            <td>String</td>
+                            <td><span class="badge bg-danger">Required</span></td>
+                            <td>✔</td>
+                            <td>
+                                <i class="bi bi-pencil-square text-primary fs-5 me-2" style="cursor:pointer"></i>
+                                <i class="bi bi-trash text-danger fs-5" style="cursor:pointer"></i>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>amount</td>
+                            <td>Decimal</td>
+                            <td><span class="badge bg-danger">Required</span></td>
+                            <td>—</td>
+                            <td>
+                                <i class="bi bi-pencil-square text-primary fs-5 me-2" style="cursor:pointer"></i>
+                                <i class="bi bi-trash text-danger fs-5" style="cursor:pointer"></i>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ======================= MAPPING CONFIG TAB ====================== -->
+        <div id="tab-mapping" class="tab-section d-none">
+            <h4 class="fw-bold mb-3">Mapping Configuration</h4>
+            <p class="text-muted">Coming soon...</p>
+        </div>
+
+    </div>
+
+    <!-- TAB SWITCH SCRIPT -->
+    <script>
+        document.querySelectorAll('#configTabs button').forEach(tab => {
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('d-none'));
+                document.querySelectorAll('#configTabs button').forEach(btn => btn.classList.remove('active'));
+
+                document.getElementById(this.dataset.target).classList.remove('d-none');
+                this.classList.add('active');
+            });
+        });
+
+        // DATA STRUCTURE FORM TOGGLE
+        const formCard = document.getElementById("addFieldForm");
+        document.getElementById("addFieldBtn").onclick = () => formCard.classList.remove("d-none");
+        document.getElementById("closeFieldForm").onclick = () => formCard.classList.add("d-none");
+        document.getElementById("cancelFieldBtn").onclick = () => formCard.classList.add("d-none");
+    </script>
+
+</body>
+
+</html>

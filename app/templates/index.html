@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SMART-R | Reconciliation Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            margin-top: 0%;
+            background: #0e1525;
+            font-family: 'Segoe UI', sans-serif;
+            color: #e9eef7;
+        }
+
+        /* MAIN */
+        .main {
+            margin-left: 280px;
+            padding: 35px;
+        }
+
+        .hero {
+            margin-top: 0%;
+            background: linear-gradient(135deg, #1245ff33, #0dd2ff33);
+            border-radius: 22px;
+            padding: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+        }
+
+        .hero h1 {
+            font-weight: 900;
+        }
+
+        /* GLASS CARD */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 25px;
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.35);
+            transition: 0.3s;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* KPI */
+        .kpi-box {
+            border-radius: 16px;
+            padding: 25px;
+            background: linear-gradient(135deg, #0d6efd, #00b4ff);
+            box-shadow: 0 10px 28px rgba(0, 200, 255, 0.25);
+            color: #fff;
+            transition: 0.25s;
+        }
+
+        .kpi-box:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-input {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 12px;
+            color: #fff !important;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #246bfb, #0dd2ff);
+            color: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 18px;
+            border: none;
+            box-shadow: 0 10px 20px rgba(0, 200, 255, 0.3);
+            transition: 0.2s;
+        }
+
+        .btn-gradient:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Table */
+        table {
+            color: #fff !important;
+        }
+
+        thead {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .table-container {
+            max-height: 420px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <!-- SIDEBAR -->
+    <!-- <div class="sidebar">
+    {% include 'sidebar.html' %}
+</div> -->
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <!-- HERO SECTION -->
+        <div class="hero mb-4 mt-0">
+            <h1>Reconciliation Dashboard</h1>
+            <p class="text-light">Automated financial matching • Fuzzy logic • AI powered categorization</p>
+        </div>
+
+        <!-- UPLOAD CARD -->
+        <div class="glass-card mb-4">
+            <h4><i class="bi bi-cloud-arrow-up"></i> Upload Files</h4>
+            <p class="text-secondary small">Upload Source and Target CSV files to run comparison.</p>
+
+            <form id="reconForm" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label class="form-label">Source CSV</label>
+                        <input type="file" class="form-control upload-input" id="source_file" name="source_file"
+                            required>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label">Target CSV</label>
+                        <input type="file" class="form-control upload-input" id="target_file" name="target_file"
+                            required>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Fuzzy %</label>
+                        <input type="number" class="form-control upload-input" id="fuzzy_threshold"
+                            value="80" name="fuzzy_threshold">
+                    </div>
+                </div>
+
+                <button class="btn-gradient w-100 mt-3" type="submit">
+                    <i class="bi bi-lightning-charge-fill"></i> Run Reconciliation
+                </button>
+            </form>
+        </div>
+
+        <!-- KPI -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="kpi-box">
+                    <h6>Total Records</h6>
+                    <div class="fs-2 fw-bold">1200</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="kpi-box" style="background:linear-gradient(135deg,#198754,#37cc70);">
+                    <h6>Matched</h6>
+                    <div class="fs-2 fw-bold">950</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="kpi-box" style="background:linear-gradient(135deg,#ffc107,#ffde59); color:#000;">
+                    <h6>Pending</h6>
+                    <div class="fs-2 fw-bold">110</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="kpi-box" style="background:linear-gradient(135deg,#dc3545,#ff6b6b);">
+                    <h6>Unmatched</h6>
+                    <div class="fs-2 fw-bold">140</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="row mb-4">
+            <div class="col-md-5">
+                <div class="glass-card">
+                    <h5>Status Distribution</h5>
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="glass-card">
+                    <h5>Mismatch Reasons</h5>
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="glass-card mb-5">
+            <h4>Reconciliation Results</h4>
+
+            <div class="table-container mt-3">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tran ID</th>
+                            <th>Source Amount</th>
+                            <th>Target Amount</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reconTableBody"></tbody>
+                </table>
+                <div id="paginationContainer"></div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JS -->
+    <script>
+        document.getElementById("reconForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            formData.append("source_file", document.getElementById("source_file").files[0]);
+            formData.append("target_file", document.getElementById("target_file").files[0]);
+            formData.append("fuzzy_threshold", document.getElementById("fuzzy_threshold").value);
+
+            const res = await fetch("/recon/reconcile", { method: "POST", body: formData });
+            const data = await res.json();
+        });
+
+        document.addEventListener("DOMContentLoaded", () => loadReportFromDB());
+            let currentPage = 1;
+            const rowsPerPage = 10;
+            let fullData = [];
+
+            async function loadReportFromDB() {
+                const res = await fetch("/recon/reports");
+                fullData = await res.json();
+
+                currentPage = 1; // reset to first page
+                renderTable();
+                renderPagination();
+            }
+
+            function renderTable() {
+                const tableBody = document.getElementById("reconTableBody");
+                tableBody.innerHTML = "";
+
+                const start = (currentPage - 1) * rowsPerPage;
+                const end = start + rowsPerPage;
+                const paginatedData = fullData.slice(start, end);
+
+                paginatedData.forEach(row => {
+                    const statusClass =
+                        row.status === "MATCHED" ? "text-success fw-bold" :
+                        row.status === "PENDING" ? "text-warning fw-bold" :
+                        row.status === "UNMATCHED" ? "text-danger fw-bold" :
+                        "";
+
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td>${row.tran_id}</td>
+                            <td>${row.source_amount}</td>
+                            <td>${row.target_amount}</td>
+                            <td class="${statusClass}">${row.status}</td>
+                            <td>${row.reason}</td>
+                        </tr>`;
+                });
+            }
+
+            function renderPagination() {
+                const totalPages = Math.ceil(fullData.length / rowsPerPage);
+                let paginationHTML = "";
+
+                paginationHTML += `
+                    <nav>
+                        <ul class="pagination justify-content-center mt-3">
+                `;
+
+                for (let i = 1; i <= totalPages; i++) {
+                    paginationHTML += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="gotoPage(${i})">${i}</a>
+                        </li>
+                    `;
+                }
+
+                paginationHTML += `
+                        </ul>
+                    </nav>
+                `;
+
+                document.getElementById("paginationContainer").innerHTML = paginationHTML;
+            }
+
+            function gotoPage(page) {
+                currentPage = page;
+                renderTable();
+                renderPagination();
+            }
+
+        // async function loadReportFromDB() {
+        //     const res = await fetch("/recon/reports");
+        //     const data = await res.json();
+
+        //     const tableBody = document.getElementById("reconTableBody");
+        //     tableBody.innerHTML = "";
+            
+        //     data.forEach(row => {
+        //         const statusClass =
+        //                 row.status === "MATCHED" ? "text-success fw-bold" :
+        //                 row.status === "PENDING" ? "text-warning fw-bold" :
+        //                 row.status === "UNMATCHED" ? "text-danger fw-bold" :
+        //                 "";
+        //         tableBody.innerHTML += `
+        //             <tr>
+        //                 <td>${row.tran_id}</td>
+        //                 <td>${row.source_amount}</td>
+        //                 <td>${row.target_amount}</td>
+        //                 <td class="${statusClass}">${row.status}</td>
+        //                 <td>${row.reason}</td>
+        //             </tr>`;
+        //     });
+        // }
+
+        new Chart(document.getElementById("pieChart"), {
+            type: "pie",
+            data: {
+                labels: ["Matched", "Pending", "Unmatched"],
+                datasets: [{
+                    data: [950, 110, 140],
+                    backgroundColor: ["#37cc70", "#ffde59", "#ff6b6b"]
+                }]
+            }
+        });
+
+        new Chart(document.getElementById("barChart"), {
+            type: "bar",
+            data: {
+                labels: ["Amount mismatch", "Missing in target", "Description fuzzy"],
+                datasets: [{
+                    data: [70, 40, 30],
+                    backgroundColor: "#246bfb"
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    </script>
+
+</body>
+
+</html>
