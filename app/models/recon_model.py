@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime
 from utils.database import Base
+from  utils.extension import db
 
-class ReconResult(Base):
+class ReconResult(db.Model):
     __tablename__ = "recon_results"
 
     id = Column(Integer, primary_key=True, autoincrement=True)

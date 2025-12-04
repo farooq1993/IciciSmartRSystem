@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template, Response, redirect
-from models.channel import CreateChannel, DataStructureTemplate,DataStructureField
+from models.channel import CreateChannel, DataStructureField
 from utils.database import SessionLocal
 from datetime import datetime
 
@@ -49,48 +49,13 @@ def create_channel():
     return render_template("create_channel.html", channels=channels)
 
 
-@channel.route("/structure")
-def structure_home():
-    templates = DataStructureTemplate.query.order_by(DataStructureTemplate.id.asc()).all()
-
-    selected_template_id = request.args.get("template_id", type=int)
-    selected_template = None
-    fields = []
-
-    if selected_template_id:
-        selected_template = DataStructureTemplate.query.get(selected_template_id)
-        if selected_template:
-            fields = selected_template.fields
-
-    return render_template(
-        "structure.html",
-        templates=templates,
-        selected_template=selected_template,
-        fields=fields
-    )
-
-@channel.route("/structure/template/add", methods=["POST"])
-def add_template():
-    name = request.form.get("name")
-    description = request.form.get("description")
-
-    template = DataStructureTemplate(name=name, description=description)
-    db.session.add(template)
-    db.session.commit()
-
-    return redirect(url_for("structure.structure_home", template_id=template.id))
-
-@channel.route("/structure/template/<int:template_id>/field/add", methods=["POST"])
-def add_field(template_id):
-    template = DataStructureTemplate.query.get_or_404(template_id)
-
+@channel.route("/structure/field/add", methods=["GET", "POST"])
+def add_field():
     form = request.form
 
-    max_sort = db.session.query(db.func.max(DataStructureField.sort_order))\
-        .filter_by(template_id=template.id).scalar() or 0
+    max_sort = db.session.query(db.func.max(DataStructureField.sort_order)).scalar() or 0
 
     field = DataStructureField(
-        template_id=template.id,
         field_name=form.get("field_name"),
         data_type=form.get("data_type"),
         format=form.get("format") or None,
@@ -105,7 +70,8 @@ def add_field(template_id):
     db.session.add(field)
     db.session.commit()
 
-    return redirect(url_for("structure.structure_home", template_id=template.id))
+    return redirect(url_for("channel.add_field"))
+
 
 
 @channel.route("/structure/field/<int:field_id>/delete", methods=["DELETE"])

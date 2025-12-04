@@ -61,7 +61,7 @@ def user_login():
 @user.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('user.login'))
+    return redirect(url_for('user.user_login'))
 
 
 
