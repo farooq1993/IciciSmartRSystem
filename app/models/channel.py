@@ -19,12 +19,33 @@ class CreateChannel(db.Model):
     channel_polling_freq = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow,nullable=True)
 
+class DataStructureTemplate(db.Model):
+    __tablename__ = "data_structure_templates"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False, unique=True)
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    fields = db.relationship(
+        "DataStructureField",
+        backref="template",
+        cascade="all, delete-orphan",
+        lazy=True,
+        order_by="DataStructureField.sort_order.asc()"
+    )
+
 
 class DataStructureField(db.Model):
     __tablename__ = "data_structure_fields"
 
     id = db.Column(db.Integer, primary_key=True)
-
+    # FOREIGN KEY REQUIRED
+    template_id = db.Column(
+        db.Integer,
+        db.ForeignKey("data_structure_templates.id"),
+        nullable=False
+    )
     field_name = db.Column(db.String(255), nullable=False)
     data_type = db.Column(db.String(50), nullable=False)
     format = db.Column(db.String(100))
@@ -34,7 +55,7 @@ class DataStructureField(db.Model):
     primary_key = db.Column(db.Boolean, default=False)
     regex = db.Column(db.String(255))
     sort_order = db.Column(db.Integer, default=0)
-
+    is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
