@@ -34,6 +34,8 @@ class DataStructureTemplate(db.Model):
         lazy=True,
         order_by="DataStructureField.sort_order.asc()"
     )
+    mappings = db.relationship("FieldMapping", back_populates="template", cascade="all, delete",lazy=True)
+
 
 
 class DataStructureField(db.Model):
@@ -57,6 +59,21 @@ class DataStructureField(db.Model):
     sort_order = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+#====Model for Mapping=========
+
+class FieldMapping(db.Model):
+    __tablename__ = "field_mappings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    template_id = db.Column(db.Integer, db.ForeignKey("data_structure_templates.id"))
+
+    source_column = db.Column(db.String(255), nullable=False)
+    target_field = db.Column(db.String(255), nullable=False)
+    transformation = db.Column(db.String(255))
+
+    template = db.relationship("DataStructureTemplate", back_populates="mappings")
+
 
 
 

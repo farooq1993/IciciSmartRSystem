@@ -20,3 +20,19 @@ body {
 .form-label {
     font-weight: 600;
 }
+
+
+/* Style for mapping */
+.btn-purple {
+    background-color: #7b43e0;
+    color: #fff;
+}
+
+.bg-purple {
+    background-color: #d9c5fb;
+    color: #5b2ec3;
+}
+
+.mapping-table th {
+    background: #f8f9fa;
+}

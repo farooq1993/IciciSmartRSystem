@@ -39,6 +39,33 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // =============== EDIT FIELD (OPEN MODAL) ==================
+    document.addEventListener("click", function (e) {
+
+        // If edit clicked
+        if (e.target.closest(".edit-field")) {
+            e.preventDefault();
+
+            const id = e.target.closest(".edit-field").dataset.id;
+            const row = document.getElementById(`row-${id}`);
+
+            // Fill modal fields
+            document.getElementById("editFieldId").value = id;
+            document.getElementById("editFieldName").value = row.children[0].innerText;
+            document.getElementById("editFieldType").value = row.children[1].innerText;
+
+            document.getElementById("editMandatory").checked =
+                row.children[2].innerText.trim() === "Yes";
+
+            document.getElementById("editPrimaryKey").checked =
+                row.children[3].innerText.trim() === "✔";
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById("editFieldModal"));
+            modal.show();
+        }
+    });
+
     // =============== DELETE FIELD (AJAX) ==================
     document.addEventListener("click", async function (e) {
         if (e.target.closest(".delete-field")) {
@@ -58,3 +85,5 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+

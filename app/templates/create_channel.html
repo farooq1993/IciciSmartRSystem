@@ -139,7 +139,7 @@
                         <select name="template_id" class="form-select" onchange="this.form.submit()">
                             <option value="">Select Template</option>
                             {% for t in templates %}
-                            <option value="{{ t.id }}" {% if template and template.id == t.id %}selected{% endif %}>
+                            <option value="{{ t.id }}" {% if template and template.id==t.id %}selected{% endif %}>
                                 {{ t.name }}
                             </option>
                             {% endfor %}
@@ -267,6 +267,12 @@
                                 <a href="#" data-id="{{ f.id }}" class="delete-field text-danger fs-5">
                                     <i class="bi bi-trash"></i>
                                 </a>
+                                <!-- DELETE -->
+                                <a href="#" data-id="{{ f.id }}" class="delete-field text-danger fs-5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16">
+                                        <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z"/>
+                                    </svg>
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -276,16 +282,119 @@
 
             {% endif %}
         </div>
+<div id="tab-mapping" class="tab-section d-none">
 
-        <!-- ========================== MAPPING TAB ========================== -->
-        <div id="tab-mapping" class="tab-section d-none">
-            <h4 class="fw-bold mb-3">Mapping Configuration</h4>
-            <p class="text-muted">Coming soon...</p>
-        </div>
+    <h4 class="fw-bold mb-3">Mapping Configuration</h4>
+    <p class="text-muted">Map source columns to target reconciliation structure</p>
 
+    {% if template %}
+
+    <!-- Add Mapping Button -->
+    <div class="text-end mb-3">
+        <button class="btn btn-purple" id="openMappingModal">
+            <i class="bi bi-plus-circle"></i> Add Mapping
+        </button>
     </div>
 
-    <!-- Load JS -->
+    <!-- Mapping Table -->
+    <div class="card p-3">
+        <h5 class="fw-bold mb-3">Field Mappings</h5>
+
+        <table class="table table-bordered mapping-table">
+            <thead class="table-light">
+                <tr>
+                    <th>Source Column</th>
+                    <th class="text-center">→</th>
+                    <th>Target Field</th>
+                    <th>Transformation</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="mappingTableBody">
+                {% for m in template.mappings %}
+                <tr id="map-{{ m.id }}">
+                    <td>{{ m.source_column }}</td>
+                    <td class="text-center">→</td>
+                    <td>{{ m.target_field }}</td>
+                    <td>{{ m.transformation or "—" }}</td>
+                    <td>
+                        <i class="bi bi-pencil edit-mapping text-primary fs-5"
+                            data-id="{{ m.id }}" style="cursor:pointer"></i>
+                        <i class="bi bi-trash delete-mapping text-danger fs-5 ms-2"
+                            data-id="{{ m.id }}" style="cursor:pointer"></i>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MOVE MODAL INSIDE IF BLOCK -->
+    <div class="modal fade" id="mappingModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mappingModalTitle">Add Mapping</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="mappingForm" data-template-id="{{ template.id }}">
+                        <input type="hidden" id="mappingId">
+
+                        <div class="mb-3">
+                            <label class="form-label">Source Column</label>
+                            <select id="sourceColumn" class="form-select">
+                                {% for f in template.fields %}
+                                <option value="{{ f.field_name }}">{{ f.field_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Target Field</label>
+                            <select id="targetField" class="form-select">
+                                {% for f in template.fields %}
+                                <option value="{{ f.field_name }}">{{ f.field_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Transformation</label>
+                            <select id="transformation" class="form-select">
+                                <option value="">None</option>
+                                <option value="Trim">Trim</option>
+                                <option value="Uppercase">Uppercase</option>
+                                <option value="Lowercase">Lowercase</option>
+                                <option value="Trim+Uppercase">Trim + Uppercase</option>
+                                <option value="Parse Decimal">Parse Decimal</option>
+                                <option value="Parse Date">Parse Date</option>
+                            </select>
+                        </div>
+
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-success" id="saveMappingBtn">Save Mapping</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+        <p class="text-muted">Select a template in Data Structure tab first.</p>
+    {% endif %}
+
+</div>
+
+
+<!-- Load JS -->
 <script src="{{ url_for('static', filename='js/channel.js') }}"></script>
 <script>
         document.querySelectorAll('#configTabs button').forEach(tab => {
@@ -313,7 +422,130 @@
             document.querySelector('[data-target="tab-channel"]').classList.remove("active");
             document.querySelector('[data-target="tab-structure"]').classList.add("active");
         }
-    </script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const mappingModalEl = document.getElementById("mappingModal");
+        if (!mappingModalEl) return;   // <-- prevents errors when no template selected
+
+        const mappingModal = new bootstrap.Modal(mappingModalEl);
+        const mappingForm = document.getElementById("mappingForm");
+        const saveBtn = document.getElementById("saveMappingBtn");
+
+        let editMode = false;
+        const templateId = mappingForm.dataset.templateId;
+
+        // OPEN MODAL → ADD MODE
+        const openBtn = document.getElementById("openMappingModal");
+        if (openBtn) {
+            openBtn.onclick = function () {
+                editMode = false;
+                mappingForm.reset();
+                document.getElementById("mappingId").value = "";
+                document.getElementById("mappingModalTitle").innerText = "Add Mapping";
+                mappingModal.show();
+            };
+        }
+
+        // SAVE MAPPING (ADD / EDIT)
+        saveBtn.addEventListener("click", async function () {
+
+            const source = document.getElementById("sourceColumn").value;
+            const target = document.getElementById("targetField").value;
+            const transformation = document.getElementById("transformation").value;
+            const mappingId = document.getElementById("mappingId").value;
+
+            const payload = {
+                source_column: source,
+                target_field: target,
+                transformation: transformation
+            };
+
+            let url = "";
+            let method = "";
+
+            if (editMode) {
+                // UPDATE
+                url = `/recon/structure/mapping/${mappingId}/update`;
+                method = "PUT";
+            } else {
+                // ADD
+                url = `/recon/structure/mapping/${templateId}/add`;
+                method = "POST";
+            }
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (!editMode) {
+                // ADD NEW ROW
+                const rowHTML = `
+                    <tr id="map-${data.id}">
+                        <td>${data.source_column}</td>
+                        <td class="text-center">→</td>
+                        <td>${data.target_field}</td>
+                        <td>${data.transformation || "—"}</td>
+                        <td>
+                            <i class="bi bi-pencil edit-mapping text-primary fs-5" data-id="${data.id}" style="cursor:pointer"></i>
+                            <i class="bi bi-trash delete-mapping text-danger fs-5 ms-2" data-id="${data.id}" style="cursor:pointer"></i>
+                        </td>
+                    </tr>
+                `;
+
+                document.getElementById("mappingTableBody")
+                    .insertAdjacentHTML("beforeend", rowHTML);
+            } else {
+                // UPDATE EXISTING
+                const row = document.getElementById(`map-${mappingId}`);
+                row.children[0].innerText = source;
+                row.children[2].innerText = target;
+                row.children[3].innerText = transformation || "—";
+            }
+
+            mappingModal.hide();
+        });
+
+        // EDIT / DELETE LISTENERS
+        document.addEventListener("click", function (e) {
+
+            // ===================== EDIT =====================
+            if (e.target.classList.contains("edit-mapping")) {
+
+                editMode = true;
+                const id = e.target.dataset.id;
+                const row = document.getElementById(`map-${id}`);
+
+                document.getElementById("mappingId").value = id;
+                document.getElementById("sourceColumn").value = row.children[0].innerText;
+                document.getElementById("targetField").value = row.children[2].innerText;
+                const transformValue = row.children[3].innerText;
+                document.getElementById("transformation").value =
+                    transformValue === "—" ? "" : transformValue;
+
+                document.getElementById("mappingModalTitle").innerText = "Edit Mapping";
+                mappingModal.show();
+            }
+
+            // ===================== DELETE =====================
+            if (e.target.classList.contains("delete-mapping")) {
+
+                const id = e.target.dataset.id;
+
+                fetch(`/recon/structure/mapping/${id}/delete`, {
+                    method: "DELETE"
+                });
+
+                document.getElementById(`map-${id}`).remove();
+            }
+        });
+
+    });
+
+</script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template, Response, redirect, url_for
-from models.channel import CreateChannel, DataStructureField,DataStructureTemplate
+from models.channel import CreateChannel, DataStructureField,DataStructureTemplate, FieldMapping
 from utils.database import SessionLocal
 from utils.extension import db
 from datetime import datetime
@@ -14,46 +14,15 @@ def get_channel_list():
     return jsonify({'msg':'all channels list'})
 
 
-# @channel.route('/create_channel', methods=['GET', 'POST'])
-# def create_channel():
-#     if request.method == "POST":
-#         channel_name = request.form.get("channel_name")
-#         channel_type = request.form.get("channel_type")
-#         channel_source_path = request.form.get("channel_source_path")
-#         channel_file_type = request.form.get("channel_file_type")
-#         channel_username = request.form.get("channel_username")
-#         channel_polling_freq = request.form.get("channel_polling_freq")
-
-#         new_channel = CreateChannel(
-#             channel_name=channel_name,
-#             channel_type=channel_type,
-#             channel_source_path=channel_source_path,
-#             channel_file_type=channel_file_type,
-#             channel_username=channel_username,
-#             channel_polling_freq=channel_polling_freq,
-#             created_at=datetime.utcnow()
-#         )
-
-#         db.add(new_channel)
-#         db.commit()
-
-#         return redirect(url_for("channel.create_channel"))
-    
-#     # Handle GET → fetch channel list
-#     try:
-#         # channels = db.session.query(CreateChannel).all()
-#         channels = CreateChannel.query.all()
-#         templates = DataStructureTemplate.query.all()
-#         print("temp:", templates)
-#     except Exception as e:
-#         db.session.rollback()
-#         raise e
-#     finally:
-#         db.session.close()
-#     return render_template("create_channel.html", channels=channels, template=templates)
-
 @channel.route('/create_channel', methods=['GET', 'POST'])
 def create_channel():
+
+        # If template_id passed → redirect to edit_template()
+    template_id = request.args.get("template_id")
+    if template_id:
+        print("REDIRECTING TO TEMPLATE:", template_id)
+        return redirect(url_for("channel.edit_template", template_id=template_id))
+
     if request.method == "POST":
         new_channel = CreateChannel(
             channel_name=request.form.get("channel_name"),
@@ -68,6 +37,8 @@ def create_channel():
         db.session.commit()
 
         return redirect(url_for("channel.create_channel"))
+
+    # GET METHOD:
 
     return render_template(
         "create_channel.html",
@@ -127,24 +98,29 @@ def add_field(template_id):
 @channel.route("/structure/template/select")
 def select_template():
     template_id = request.args.get("template_id")
-    print("temi id", template_id)
-    if not template_id:
-        return redirect(url_for("channel.create_channel"))
 
-    return redirect(url_for("channel.edit_template", template_id=template_id))
+    return redirect(url_for("channel.create_channel", template_id=template_id))
+
+# @channel.route("/structure/template/select")
+# def select_template():
+#     template_id = request.args.get("template_id")
+#     print("temi id", template_id)
+#     if not template_id:
+#         return redirect(url_for("channel.create_channel"))
+
+#     return redirect(url_for("channel.edit_template", template_id=template_id))
 
 @channel.route("/structure/template/<int:template_id>")
 def edit_template(template_id):
-    # Load selected template
     template = DataStructureTemplate.query.get_or_404(template_id)
 
-    # Load channel list (for Channel Tab)
     channels = CreateChannel.query.all()
-
-    # Load all templates (for dropdown)
     templates = DataStructureTemplate.query.all()
 
-    # Render main page with complete context
+    # DEBUG: ensure fields and mappings load
+    print("FIELDS:", [f.field_name for f in template.fields])
+    print("MAPPINGS:", [(m.source_column, m.target_field) for m in template.mappings])
+
     return render_template(
         "create_channel.html",
         channels=channels,
@@ -181,4 +157,47 @@ def delete_field(field_id):
 
     return {"success": True, "id": field_id}
 
+
+
+#=====Route for Mapping=========
+
+@channel.route("/structure/mapping/<int:template_id>/add", methods=["POST"])
+def add_mapping(template_id):
+    data = request.json
+
+    mapping = FieldMapping(
+        template_id=template_id,
+        source_column=data["source_column"],
+        target_field=data["target_field"],
+        transformation=data.get("transformation")
+    )
+    db.session.add(mapping)
+    db.session.commit()
+
+    return {
+        "id": mapping.id,
+        "source_column": mapping.source_column,
+        "target_field": mapping.target_field,
+        "transformation": mapping.transformation,
+    }, 200
+
+@channel.route("/structure/mapping/<int:mapping_id>/update", methods=["PUT"])
+def update_mapping(mapping_id):
+    mapping = FieldMapping.query.get_or_404(mapping_id)
+    data = request.json
+
+    mapping.source_column = data["source_column"]
+    mapping.target_field = data["target_field"]
+    mapping.transformation = data.get("transformation")
+
+    db.session.commit()
+    return {"message": "updated"}, 200
+
+@channel.route("/structure/mapping/<int:mapping_id>/delete", methods=["DELETE"])
+def delete_mapping(mapping_id):
+    mapping = FieldMapping.query.get_or_404(mapping_id)
+    db.session.delete(mapping)
+    db.session.commit()
+
+    return {"message": "deleted"}, 200
 
