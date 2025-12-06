@@ -6,8 +6,6 @@ from datetime import datetime
 
 
 channel = Blueprint("channel", __name__)
-# db = SessionLocal()
-
 
 @channel.route("/", methods=["GET"])
 def get_channel_list():
@@ -17,10 +15,9 @@ def get_channel_list():
 @channel.route('/create_channel', methods=['GET', 'POST'])
 def create_channel():
 
-        # If template_id passed → redirect to edit_template()
+     # If template_id passed → redirect to edit_template()
     template_id = request.args.get("template_id")
     if template_id:
-        print("REDIRECTING TO TEMPLATE:", template_id)
         return redirect(url_for("channel.edit_template", template_id=template_id))
 
     if request.method == "POST":
@@ -101,14 +98,6 @@ def select_template():
 
     return redirect(url_for("channel.create_channel", template_id=template_id))
 
-# @channel.route("/structure/template/select")
-# def select_template():
-#     template_id = request.args.get("template_id")
-#     print("temi id", template_id)
-#     if not template_id:
-#         return redirect(url_for("channel.create_channel"))
-
-#     return redirect(url_for("channel.edit_template", template_id=template_id))
 
 @channel.route("/structure/template/<int:template_id>")
 def edit_template(template_id):
@@ -116,10 +105,6 @@ def edit_template(template_id):
 
     channels = CreateChannel.query.all()
     templates = DataStructureTemplate.query.all()
-
-    # DEBUG: ensure fields and mappings load
-    print("FIELDS:", [f.field_name for f in template.fields])
-    print("MAPPINGS:", [(m.source_column, m.target_field) for m in template.mappings])
 
     return render_template(
         "create_channel.html",
